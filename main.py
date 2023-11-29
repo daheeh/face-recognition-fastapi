@@ -1,5 +1,4 @@
-import io
-from PIL import Image
+
 from fastapi import FastAPI, File, Request, UploadFile
 import cv2
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
@@ -7,12 +6,24 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from insightface.app import FaceAnalysis
 import numpy as np
-from pydantic import MySQLDsn
+from models import Base
+from database import SessionLocal, engine
+
+Base.metadata.create_all(bind=engine)
 
 face = FaceAnalysis(providers=['CPUExecutionProvider'])
 face.prepare(ctx_id=0, det_size=(640, 640))
 
 app = FastAPI()
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 UPLOAD_DIRECTORY = "capture_img"
 
 # html파일(템플릿) 파일 위치
@@ -48,22 +59,6 @@ def generate_frames():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n\r\n')
 
-# # MySQL 연결 설정
-# mydb = MySQLDsn.connector.connect(
-#     host="localhost",
-#     user="root",
-#     password=1124,
-#     database='miniproject'
-# )
-
-# mycursor = mydb.cursor()
-
-# def save_image_to_db(image_name, image_path):
-#     global mycursor, mydb
-#     sql = "INSERT INTO Image (image_name, image_path) VALUES (%s, %s)"
-#     mycursor.execute(sql, (image_name, image_path))
-#     mydb.commit()
-
 
 # 기본 화면
 @app.get("/", response_class=HTMLResponse)
@@ -98,5 +93,5 @@ async def img_file():
 
  
 
-
+# DB 테스트
  

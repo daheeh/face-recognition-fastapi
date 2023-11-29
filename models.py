@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, Text
+from sqlalchemy import Column, Integer, String
 from database import Base
 
 class Image(Base):
-    __tablename__ = 'Image'
+    __tablename__ = 'tbl_image'
     id = Column(Integer, primary_key=True)
-    task = Column(Text)
+    task = Column(String(256))
+

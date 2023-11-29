@@ -1,19 +1,21 @@
-from urllib.parse import quote
+import json
+import os
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-user = "root"
-pwd = "1124"
-host = "localhost"
-port = 3306
-db='miniproject'
-db_url = f'mysql+pymysql://{user}:{quote(pwd)}@{host}:{port}/{db}'
-engine = create_engine(db_url,echo=True)
-SessionFactory = sessionmaker(autocommit=False,autoflush=False,bind=engine)
+BASE_DIR = os.path.dirname(__file__)
+SECRET_FILE = os.path.join(BASE_DIR, 'secrets.json')
+secrets = json.loads(open(SECRET_FILE).read())
+DB = secrets["DB"]
 
-def get_db():
-    session=SessionFactory()
-    try:
-        yield session
-    finally:
-        session.close()
+DB_URL = f"mysql+pymysql://{DB['user']}:{DB['password']}@{DB['host']}:{DB['port']}/{DB['database']}?charset=utf8"
+
+print(DB_URL)
+engine = create_engine(
+    DB_URL, encoding = 'utf-8'
+)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
